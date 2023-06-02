@@ -583,7 +583,7 @@ describe("firestore", () => {
             if (docSnap.exists()) {
               console.log("Document data:", docSnap.data());
             } else {
-              // doc.data() will be undefined in this case
+              // docSnap.data() will be undefined in this case
               console.log("No such document!");
             }
             // [END get_document]
@@ -682,6 +682,18 @@ describe("firestore", () => {
             });
             // [END get_multiple_all]
         });
+
+        it("should get all documents from a subcollection", async () => {
+          // [START firestore_query_subcollection]
+          const { collection, getDocs } = require("firebase/firestore");
+          // Query a reference to a subcollection
+          const querySnapshot = await getDocs(collection(db, "cities", "SF", "landmarks"));
+          querySnapshot.forEach((doc) => {
+            // doc.data() is never undefined for query doc snapshots
+            console.log(doc.id, " => ", doc.data());
+          });
+          // [END firestore_query_subcollection]
+      });
 
         it("should listen on multiple documents #UNVERIFIED", (done) => {
             // [START listen_multiple]
@@ -1155,6 +1167,27 @@ describe("firestore", () => {
                 });
                 // [END fs_collection_group_query]
             });
+        });
+    });
+
+    describe("aggregate queries", () => {
+        it("should fetch the count of documents in a collection", async () => {
+            const { collection, getCountFromServer } = require("firebase/firestore"); 
+            // [START count_aggregate_collection]
+            const coll = collection(db, "cities");
+            const snapshot = await getCountFromServer(coll);
+            console.log('count: ', snapshot.data().count);
+            // [END count_aggregate_collection]
+        });
+
+        it("should fetch the count of documents in a query", async () => {
+            const { collection, getCountFromServer, where, query } = require("firebase/firestore"); 
+            // [START count_aggregate_query]
+            const coll = collection(db, "cities");
+            const q = query(coll, where("state", "==", "CA"));
+            const snapshot = await getCountFromServer(q);
+            console.log('count: ', snapshot.data().count);
+            // [END count_aggregate_query]
         });
     });
 
